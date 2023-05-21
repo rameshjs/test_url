@@ -1,5 +1,86 @@
-<meta name="twitter:card" content="summary" />
-<meta name="twitter:site" content="@flickr" />
-<meta name="twitter:title" content="Small Island Developing States Photo Submission" />
-<meta name="twitter:description" content="View the album on Flickr." />
-<meta name="twitter:image" content="https://farm6.staticflickr.com/5510/14338202952_93595258ff_z.jpg" />
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Save Canvas Animation as GIF</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/gif.js/dist/gif.worker.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gif.js/dist/gif.js"></script>
+</head>
+<body>
+  <canvas id="myCanvas" width="400" height="400"></canvas>
+  <button id="saveButton">Save as GIF</button>
+
+  <script>
+    // Get the canvas element
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Function to generate a random color
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    // Function to animate counting to a target number
+    function animateCounting(targetNumber, gif) {
+      let currentNumber = 0;
+      let animationFrameId;
+
+      function updateNumber() {
+        if (currentNumber < targetNumber) {
+          currentNumber++;
+          drawNumber(currentNumber);
+          gif.addFrame(canvas, { copy: true, delay: 100 });
+          animationFrameId = requestAnimationFrame(updateNumber);
+        } else {
+          cancelAnimationFrame(animationFrameId);
+          gif.render();
+        }
+      }
+
+      updateNumber();
+    }
+
+    // Function to draw the number on the canvas
+    function drawNumber(number) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = getRandomColor();
+      ctx.font = '48px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(number.toString(), canvas.width / 2, canvas.height / 2);
+    }
+
+    // Save canvas animation as GIF and trigger download
+    document.getElementById('saveButton').addEventListener('click', function() {
+      const gif = new GIF({
+        workers: 2,
+        quality: 10,
+        width: canvas.width,
+        height: canvas.height,
+      });
+
+      animateCounting(100, gif);
+
+      gif.on('finished', function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'animation.gif';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    });
+  </script>
+</body>
+</html>
